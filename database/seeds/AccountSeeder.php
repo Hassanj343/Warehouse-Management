@@ -25,7 +25,7 @@ class AccountSeeder extends Seeder {
                 continue;
             }
             $new_user = User::create($user);
-            echo sprintf("User '%s' created successfully!",$new_user->name);
+            echo sprintf("User '%s' created successfully! \n",$new_user->name);
         }
     }
 

@@ -15,30 +15,9 @@
             <!-- Start: Content-Wrapper -->
     <section id="content_wrapper">
 
-
         @include('templates.partials.topbar')
-                <!-- Topbar -->
-        @if(session()->has('alert-success'))
-            <div class="alert alert-sm alert-border-left alert-success light alert-dismissable mbn">
-                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
-                {{ session()->get('alert-success') }}
-            </div>
-        @endif
-        @if(session()->has('alert-danger'))
-            <div class="alert alert-sm alert-border-left alert-danger light alert-dismissable mbn">
-                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
-                {{ session()->get('alert-danger') }}
-            </div>
-        @endif
-        @if(session()->has('alert-info'))
-            <div class="alert alert-sm alert-border-left alert-info light alert-dismissable mbn">
-                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
-                {{ session()->get('alert-info') }}
-            </div>
-            @endif
-
-                    <!-- Main Content -->
-            @yield('content')
+        @include('flash::message')
+        @yield('content')
 
     </section>
 

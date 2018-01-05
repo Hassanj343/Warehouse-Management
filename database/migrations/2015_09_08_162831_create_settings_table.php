@@ -12,11 +12,11 @@ class CreateSettingsTable extends Migration {
 	 */
 	public function up()
 	{
-		Schema::create('settings', function(Blueprint $table)
+		Schema::create('application_settings', function(Blueprint $table)
 		{
 			$table->increments('id');
-			$table->string('name');
-			$table->text('value');
+			$table->string('key');
+			$table->longText('value');
 			$table->timestamps();
 		});
 	}
@@ -29,7 +29,7 @@ class CreateSettingsTable extends Migration {
 	 */
 	public function down()
 	{
-		Schema::drop('settings');
+		Schema::drop('application_settings');
 	}
 
 }

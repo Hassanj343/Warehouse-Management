@@ -7,6 +7,6 @@ class ActivityShipment extends Model {
 
     public function getProduct()
     {
-        return $this->belongsTo('App\Models\Product','product_id');
+        return $this->belongsTo(\App\Models\Products::class,'product_id');
     }
 }

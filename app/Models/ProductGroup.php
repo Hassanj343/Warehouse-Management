@@ -3,9 +3,9 @@
 use Illuminate\Database\Eloquent\Model;
 
 
-class Group extends Model {
+class ProductGroup extends Model {
 
-    protected $table = 'groups';
+    protected $table = 'product_groups';
     protected $fillable = ['name'];
 
     public function listProducts(){

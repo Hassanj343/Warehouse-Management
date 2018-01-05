@@ -80,17 +80,10 @@ class AuthController extends Controller
 
         if ($this->auth->attempt($credentials, $request->has('remember')))
         {
-            return response(array(
-                'result' => 'success',
-                'message' => 'Login successful. Redirecting ...',
-                'url' =>$this->redirectPath()
-            ));
+            return redirect($this->redirectPath());
         }
-
-        return response(array(
-            'result' => 'error',
-            'message' => $this->getFailedLoginMessage()
-        ));
+        flash($this->getFailedLoginMessage())->error();
+        return back();
     }
 
     /**

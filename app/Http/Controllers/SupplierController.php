@@ -140,55 +140,5 @@ class SupplierController extends Controller
         }
         return abort(404, 'Page not found!');
     }
-
-
-    public function api_getList()
-    {
-        $data = Supplier::all(array('id', 'name', 'address', 'city', 'country', 'mobile', 'email'));
-        return \Datatables::of($data)
-            ->addColumn('action', function ($supplier) {
-                return '<a href=" ' . route('modify-supplier', $supplier->id) . '" class="btn btn-primary btn-xs">
-                <span class="fa fa-pencil mr5"></span>
-                Edit</a>';
-            })
-            ->addColumn('select', function ($supplier) {
-                return '<div class="checkbox-custom mb5">
-    <input id="deleteSupplier-' . $supplier->id . '" class="multiDeleteSupplier" onchange="countSelected()" name="supplier-' . $supplier->id . '" type="checkbox" class="deleteSupplier" value="' . $supplier->id . '">
-    <label for="deleteSupplier-' . $supplier->id . '"></label>
-</div>';
-            })
-            ->editColumn('name', function ($supplier) {
-                return '<a href="' . route('view-supplier', $supplier->id) . '">' . $supplier->name . '</a>';
-            })
-            ->make(true);
-    }
-
-    public function api_bulkDelete()
-    {
-        $inputs = Input::all();
-        $ids = array();
-        foreach ($inputs as $name => $id) {
-            $ids[] = $id;
-            $products = Product::where('supplier_id', '=', $id);
-            foreach ($products as $key => $val) {
-                $val->supplier_id = null;
-                $val->save();
-            }
-        }
-
-        $destroy = Supplier::destroy($ids);
-        if ($destroy) {
-            return response(array(
-                'result' => 'success',
-                'message' => count($ids) . ' Suppliers deleted successfully'
-            ));
-        }
-        return response(array(
-            'result' => 'error',
-            'message' => \Lang::get('messages.general-error')
-        ));
-
-    }
-
 }
 

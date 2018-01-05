@@ -35,13 +35,13 @@ class BasicFunctions
 
     public static function getCurrentCurrency()
     {
-        $currency = Models\Settings::where('name', '=', 'general-currency')->get()->first()->value;
+        $currency = \App\Models\ApplicationSetting::where('key', '=', 'general-currency')->get()->first()->value;
         return BasicFunctions::getCurrencySymbol($currency);
     }
 
     public static function getSettings($key)
     {
-        $data = Models\Settings::where('name', '=', $key)->get()->first();
+        $data = \App\Models\ApplicationSetting::where('key', '=', $key)->get()->first();
         return ! is_null($data) ? $data->value : '';
     }
 

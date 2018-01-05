@@ -15,12 +15,13 @@ class DatabaseSeeder extends Seeder {
 		Model::unguard();
 
 		$this->call('AccountSeeder');
+		$this->call('SettingsSeeder');
+		// App Settings
 		$this->call('ProductSeeder');
-		$this->call('GroupSeeder');
-		$this->call('SupplierSeeder');
+		//$this->call('GroupSeeder');
+		//$this->call('SupplierSeeder');
 		$this->call('CustomerSeeder');
 		$this->call('ShipmentSeeder');
-		$this->call('SettingsSeeder');
 	}
 
 }

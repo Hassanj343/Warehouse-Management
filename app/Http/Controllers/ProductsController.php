@@ -358,32 +358,27 @@ class ProductsController extends Controller
 
     public function api_getStockAlert()
     {
+
         $data = array();
-        $products = Product::all();
+        $products = Product::with('warning_levels')
+                ->join('warning_levels','warning_levels.id' ,'=','products.warning_id')
+                ->where(\DB::raw('products.quantity'),'<',\DB::raw('warning_levels.level_3'))
+                ->get();
         $warning_status = array(
             'warning_1' => 'danger',
             'warning_2' => 'warning',
             'warning_3' => 'info',
         );
         foreach ($products as $key => $product) {
-            $warnings = (array) unserialize($product->warning);
-            if (empty($product->warning)) {
-                $warnings = array(
-                    'warning_1' => BasicFunctions::getSettings('warning - level - 1'),
-                    'warning_2' => BasicFunctions::getSettings('warning - level - 2'),
-                    'warning_3' => BasicFunctions::getSettings('warning - level - 3'),
-                );
-
-            }
             $status = '';
             $accepted = false;
-            if ($product->quantity <= $warnings['warning_1']) {
+            if ($product->quantity <= $product->warning_levels->level_1) {
                 $status = $warning_status['warning_1'];
                 $accepted = true;
-            } else if ($product->quantity <= $warnings['warning_2']) {
+            } else if ($product->quantity <= $product->warning_levels->level_2) {
                 $status = $warning_status['warning_2'];
                 $accepted = true;
-            } else if ($product->quantity <= $warnings['warning_3']) {
+            } else if ($product->quantity <= $product->warning_levels->level_3) {
                 $status = $warning_status['warning_3'];
                 $accepted = true;
             }
@@ -392,7 +387,7 @@ class ProductsController extends Controller
                     'name' => $product->name,
                     'quantity' => ($product->quantity <= 0) ? $product->quantity . ' - out of stock' : $product->quantity,
                     'status' => $status,
-                    'warning' => $warnings
+                    'warning' => $product->warning_levels
                 );
             }
 

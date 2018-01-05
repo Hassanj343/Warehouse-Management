@@ -16,17 +16,41 @@ class CreateProductsTable extends Migration {
 		{
 			$table->increments('id');
 			$table->string('name');
-			$table->integer('quantity')->nullable()->default(0);
-			$table->string('price')->nullable();
 			$table->string('barcode')->nullable()->unique();
-			$table->integer('group_id')->nullable();
+
+			$table->longText('description')->nullable();
+			$table->longText('options')->nullable();
+			$table->longText('location')->nullable();
+
+			$table->decimal('purchase_price',10,2)->nullable();
+			$table->decimal('sale_price',10,2);
+
+			$table->integer('warning_id')->unsigned();
 			$table->integer('supplier_id')->nullable();
-			$table->string('warning')->nullable();
-			$table->string('image')->nullable();
-			$table->text('description', 65535)->nullable();
-			$table->string('location')->nullable();
-			$table->string('type')->default("new");
+			$table->integer('group_id')->nullable();
+
+			$table->integer('quantity')->default(0);
+
+
 			$table->timestamps();
+		});
+
+		Schema::create('product_groups', function(Blueprint $table)
+		{
+			$table->increments('id');
+			$table->string('name');
+			$table->timestamps();
+		});
+
+		Schema::create('warning_levels',function(Blueprint $table){
+
+			$table->increments('id');
+			$table->integer("level_1")->default(0);
+			$table->integer("level_2")->default(0);
+			$table->integer("level_3")->default(0);
+			$table->timestamps();
+			
+
 		});
 	}
 
@@ -38,7 +62,9 @@ class CreateProductsTable extends Migration {
 	 */
 	public function down()
 	{
-		Schema::drop('products');
+		Schema::dropIfExists('products');
+		Schema::dropIfExists('warning_levels');
+		Schema::dropIfExists('product_groups');
 	}
 
 }

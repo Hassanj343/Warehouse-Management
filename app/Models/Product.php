@@ -8,7 +8,18 @@ class Product extends Model
 
     protected $table = 'products';
 
-    protected $fillable = ['name', 'type' , 'quantity', 'price', 'warning', 'barcode', 'location', 'group_id', 'supplier_id', 'image', 'description'];
+    protected $fillable = [
+        'name', 'barcode', 'description', 'options', 'location', 'purchase_price', 'sale_price',
+        'warning_id','supplier_id','group_id','quantity',
+    ];
+
+    protected $casts = [
+        'options' => 'array',
+    ];
+
+    public function warning_levels(){
+        return $this->belongsTo(WarningLevel::class,'warning_id');
+    }
 
     public function getShipmentActivities()
     {
@@ -26,7 +37,11 @@ class Product extends Model
     }
 
     public function generateBarcode(){
-        $this->barcode = sprintf("%s%s",date('dmYhi'),$this->id);
+
+        $faker = new \Faker\Generator;
+        $faker_barcode = new \Faker\Provider\Barcode($faker);
+
+        $this->barcode = $faker_barcode->ean13();
         $this->save();
         return $this->barcode;
     }

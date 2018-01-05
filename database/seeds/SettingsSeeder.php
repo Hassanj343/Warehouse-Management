@@ -1,5 +1,5 @@
 <?php
-use App\Models\Settings;
+use App\Models\ApplicationSetting;
 use Illuminate\Database\Seeder;
 
 class SettingsSeeder extends Seeder
@@ -25,8 +25,8 @@ class SettingsSeeder extends Seeder
             'company-city' => 'London',
         );
         foreach ($settings as $key => $value) {
-            $setting = Settings::firstOrNew([
-                'name' => $key
+            $setting = ApplicationSetting::firstOrNew([
+                'key' => $key
             ]);
             $setting->value = $value;
             $setting->save();
