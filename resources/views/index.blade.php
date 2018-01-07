@@ -4,7 +4,7 @@
 @section('content')
         <!-- Begin: Content -->
 <section id="content" class="table-layout animated fadeIn">
-
+ 
     <!-- begin: .tray-center -->
     <div class="tray tray-center p25 va-t posr">
 

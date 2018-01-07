@@ -1,5 +1,6 @@
 <?php namespace App\Http\Controllers;
 
+use App\DataTables\SupplierDataTable;
 use App\Http\Requests;
 use App\Models\Supplier;
 use Illuminate\Http\Request;
@@ -8,9 +9,9 @@ use Illuminate\Support\Facades\Input;
 class SupplierController extends Controller
 {
 
-    public function index()
+    public function index(SupplierDataTable $dataTable)
     {
-        return view('pages.supplier.index');
+        return $dataTable->render('pages.supplier.index');
     }
 
     public function get_create()
