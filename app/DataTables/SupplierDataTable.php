@@ -44,21 +44,6 @@ class SupplierDataTable extends DataTable
             })
             ->addColumn('county',function($query){
                 return $query->contact->county;
-            })
-            ->addColumn('address', function ($query) {
-                $address = sprintf("
-                        <strong>Line 1:</strong> %s <br> 
-                        <strong>Line 2:</strong> %s <br> 
-                        <strong>City</strong>:%s <br> 
-                        <strong>County</strong>: %s <br> 
-                        <strong>Postcode:</strong> %s",
-                    $query->contact->line_1,
-                    $query->contact->line_2,
-                    $query->contact->city,
-                    $query->contact->county,
-                    $query->contact->postcode
-                );
-                return $address;
             })->addColumn('email', function ($query) {
                 return $query->contact->email;
             })->addColumn('mobile', function ($query) {
@@ -71,8 +56,9 @@ class SupplierDataTable extends DataTable
                     ->set('class', 'btn btn-primary btn-xs  btn-block')
                     ->text('<i class="fa fa-pencil"></i> Edit');
                 $delete_button = $html->addElement('button')
-                    ->set('class', 'btn btn-danger btn-xs  btn-block btn-delete')
+                    ->set('class', 'btn btn-danger btn-xs  btn-block btn-delete-item')
                     ->set('data-target', route('delete-supplier', $query->id))
+                   ->set('onclick','deleteSupplier(this,\'' . $query->name . '\')')
                     ->text('<i class="fa fa-trash"></i> Delete');
                 return $html;
             })->removeColumn('contact');

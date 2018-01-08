@@ -23,7 +23,7 @@
                     </div>
                 @endif
                 <div class="panel-body">
-                    {!! $dataTable->table(['class' => 'table table-responsive']) !!}
+                    {!! $dataTable->table(['class' => 'table table-responsive', 'id' => 'dataTable']) !!}
                 </div>
 
             </div>
@@ -42,5 +42,25 @@
             src="https://cdn.datatables.net/responsive/2.2.1/js/dataTables.responsive.min.js"></script>
     <script src="{{ asset('vendor/datatables/buttons.server-side.js') }}"></script>
     {!! $dataTable->scripts() !!}
-
+    <script type="text/javascript">
+        function deleteSupplier(button, name){
+            var button_hrf = $(button).data('target');
+            $.confirm({
+                type: 'red',
+                title: 'Are you sure!',
+                content: "Supplier <strong>" + name +'</strong> will be deleted permanently!',
+                buttons: {
+                    tryAgain: {
+                        text: 'Yes',
+                        btnClass: 'btn-danger',
+                        action: function(){
+                            document.location.href = button_hrf;
+                        }
+                    },
+                    close: function () {
+                    }
+                }
+            });
+        }    
+    </script>
 @stop

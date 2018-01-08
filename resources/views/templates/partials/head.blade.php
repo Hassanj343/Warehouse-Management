@@ -21,6 +21,7 @@
 
     <link rel="stylesheet" type="text/css" href="{{ asset('assets/css/datatables.min.css')  }}">
     <link rel="stylesheet" type="text/css" href="{{ asset('assets/css/select2.min.css')  }}">
+    <link rel="stylesheet" type="text/css" href="{{ asset('vendor/jquery-confirm-master/dist/jquery-confirm.min.css')  }}">
     <link rel="stylesheet" type="text/css" href="{{ asset('assets/css/styles.css')  }}">
 
 

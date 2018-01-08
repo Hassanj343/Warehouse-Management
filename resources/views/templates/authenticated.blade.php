@@ -44,7 +44,6 @@
             if (parent.hasClass('accordion-toggle')) {
                 parent.addClass('menu-open')
             }
-
         });
     });
 
