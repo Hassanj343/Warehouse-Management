@@ -1,17 +1,23 @@
 <?php
-use App\Models\ActivityShipment;
-use App\Models\Product;
+
 use Illuminate\Database\Seeder;
-use App\Models\Shipment;
 
 class ProductSeeder extends Seeder
 {
 
     public function run()
     {
-    	$limit = (int) env('DBSEED_PRODUCTS', 10);
-        factory(\App\Models\Product::class, $limit)->create()->each(function($product){
-        	// Something for each product
+
+        $types = ['New', 'Refurbished'];
+        foreach ($types as $type) {
+            $ptype = \App\Models\ProductType::firstOrNew(['type_name' => $type]);
+            $ptype->type_name = $type;
+            $ptype->save();
+        }
+
+        $limit = (int)env('DBSEED_PRODUCTS', 10);
+        factory(\App\Models\Product::class, $limit)->create()->each(function ($product) {
+            // Something for each product
         });
     }
 

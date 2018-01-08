@@ -1,5 +1,7 @@
 <?php namespace App\Models;
 
+use Faker\Generator;
+use Faker\Provider\Barcode;
 use Illuminate\Database\Eloquent\Model;
 
 class Product extends Model
@@ -10,48 +12,51 @@ class Product extends Model
 
     protected $fillable = [
         'name', 'barcode', 'description', 'options', 'location', 'purchase_price', 'sale_price',
-        'warning_id','supplier_id','group_id','quantity',
+        'warning_id', 'supplier_id', 'group_id', 'quantity', 'type_id'
     ];
 
     protected $casts = [
         'options' => 'array',
     ];
 
-    public function warning_levels(){
-        return $this->belongsTo(WarningLevel::class,'warning_id');
+    public function warning_levels()
+    {
+        return $this->belongsTo(WarningLevel::class, 'warning_id');
     }
 
     public function getShipmentActivities()
     {
-        return $this->hasMany('ActivityShipment');
+        return $this->hasMany(ActivityShipment::class);
     }
 
-    public function getGroup()
+    public function group()
     {
-        return $this->belongsTo('App\Models\Group','group_id');
+        return $this->belongsTo(ProductGroup::class, 'group_id');
     }
 
-    public function getSupplier()
+    public function supplier()
     {
-        return $this->belongsTo('App\Models\Supplier','supplier_id');
+        return $this->belongsTo(Supplier::class, 'supplier_id');
     }
 
-    public function generateBarcode(){
+    public function getBarcode()
+    {
+        $barcode = $this->barcode;
+        if (!$barcode) {
+            $barcode = $this->generateBarcode();
+        }
+        return $barcode;
+    }
 
-        $faker = new \Faker\Generator;
-        $faker_barcode = new \Faker\Provider\Barcode($faker);
+    public function generateBarcode()
+    {
+
+        $faker = new Generator;
+        $faker_barcode = new Barcode($faker);
 
         $this->barcode = $faker_barcode->ean13();
         $this->save();
         return $this->barcode;
-    }
-
-    public function getBarcode(){
-        $barcode = $this->barcode;
-        if(!$barcode){
-            $barcode = $this->generateBarcode();
-        }
-        return $barcode;
     }
 
 }

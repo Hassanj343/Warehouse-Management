@@ -43,24 +43,25 @@
     <script src="{{ asset('vendor/datatables/buttons.server-side.js') }}"></script>
     {!! $dataTable->scripts() !!}
     <script type="text/javascript">
-        function deleteSupplier(button, name){
+        function deleteSupplier(button, name) {
             var button_hrf = $(button).data('target');
             $.confirm({
                 type: 'red',
                 title: 'Are you sure!',
-                content: "Supplier <strong>" + name +'</strong> will be deleted permanently!',
+                content: "Supplier <strong>" + name + '</strong> will be deleted permanently!',
                 buttons: {
                     tryAgain: {
                         text: 'Yes',
                         btnClass: 'btn-danger',
-                        action: function(){
+                        action: function () {
                             document.location.href = button_hrf;
                         }
                     },
-                    close: function () {
+                    Cancel: function () {
+                        return;
                     }
                 }
             });
-        }    
+        }
     </script>
 @stop

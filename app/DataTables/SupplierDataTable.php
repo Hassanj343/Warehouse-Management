@@ -30,24 +30,24 @@ class SupplierDataTable extends DataTable
                     <label for="deleteSupplier-' . $query->id . '"></label>
                 </div>';
             })
-            ->addColumn('line_1',function($query){
-                return $query->contact->line_1;
+            ->addColumn('address', function ($query) {
+                return sprintf("%s<br>%s", $query->contact->line_1, $query->contact->line_2);
             })
-            ->addColumn('line_2',function($query){
-                return $query->contact->line_2;
-            })
-            ->addColumn('postcode',function($query){
+            ->addColumn('postcode', function ($query) {
                 return $query->contact->postcode;
             })
-            ->addColumn('city',function($query){
+            ->addColumn('city', function ($query) {
                 return $query->contact->city;
             })
-            ->addColumn('county',function($query){
+            ->addColumn('county', function ($query) {
                 return $query->contact->county;
             })->addColumn('email', function ($query) {
                 return $query->contact->email;
             })->addColumn('mobile', function ($query) {
                 return $query->contact->mobile_1;
+            })
+            ->addColumn('products_supplied', function ($query) {
+                return $query->products->count();
             })->addColumn('action', function ($query) {
                 $html = HtmlTag::createElement('div')
                     ->set('class', 'btn-group');
@@ -58,7 +58,7 @@ class SupplierDataTable extends DataTable
                 $delete_button = $html->addElement('button')
                     ->set('class', 'btn btn-danger btn-xs  btn-block btn-delete-item')
                     ->set('data-target', route('delete-supplier', $query->id))
-                   ->set('onclick','deleteSupplier(this,\'' . $query->name . '\')')
+                    ->set('onclick', 'deleteSupplier(this,\'' . $query->name . '\')')
                     ->text('<i class="fa fa-trash"></i> Delete');
                 return $html;
             })->removeColumn('contact');
@@ -100,11 +100,11 @@ class SupplierDataTable extends DataTable
             'name',
             'email',
             'mobile',
-            'line_1',
-            'line_2',
+            'address',
             'county',
             'city',
             'postcode',
+            'products_supplied',
         ];
     }
 

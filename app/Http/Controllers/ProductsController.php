@@ -1,42 +1,41 @@
 <?php namespace App\Http\Controllers;
 
-use App\Http\Requests;
+use App\DataTables\ProductsDataTable;
 use App\Models\Product;
-use Faker;
-use Helpers\BasicFunctions;
+use App\Models\ProductGroup;
+use App\Models\Supplier;
 use Illuminate\Http\Request;
 
 class ProductsController extends Controller
 {
 
-    public function index()
+    public function index(ProductsDataTable $dataTable)
     {
-        return view('pages.products.index');
+        return $dataTable->render('pages.products.index');
     }
 
     public function get_create()
     {
-        return view('pages.products.create');
+        $suppliers = Supplier::all();
+        $product_groups = ProductGroup::all();
+        return view('pages.products.create', compact('suppliers', 'product_groups'));
     }
 
     public function post_create(Request $request)
     {
-        $validator = \Validator::make($request->all(), array(
+        $this->valudate($request, [
             'product_name' => 'required|min:3',
             'product_quantity' => 'required|integer'
-        ));
-        if ($validator->fails()) {
-            return back()->withErrors($validator);
-        }
-
+        ]);
+        // Handle File Upload
         $file = null;
-        if($request->hasfile('image')){
+        if ($request->hasfile('image')) {
             if ($request->file('image')->isValid()) {
                 $input_file = $request->file('image');
                 $destination_path = public_path("uploads/images/");
                 $extension = $input_file->getClientOriginalExtension();
-                $file_name = str_random(5) . date('hisdmY') . str_random(5) . '.' .  $extension;
-                if($input_file->move($destination_path,$file_name)){
+                $file_name = str_random(5) . date('hisdmY') . str_random(5) . '.' . $extension;
+                if ($input_file->move($destination_path, $file_name)) {
                     $file = "uploads/images/" . $file_name;
                 }
             }
@@ -46,8 +45,8 @@ class ProductsController extends Controller
             'name' => $request->get('product_name'),
             'quantity' => $request->get('product_quantity'),
             'price' => serialize(array(
-                'purchase_price' => $request->get('purchase_price') ? : 0.00,
-                'sale_price' => $request->get('sale_price') ? : 0.00
+                'purchase_price' => $request->get('purchase_price') ?: 0.00,
+                'sale_price' => $request->get('sale_price') ?: 0.00
             )),
             'warning' => serialize(array(
                 'warning_1' => $request->get('warning_1'),
@@ -56,8 +55,8 @@ class ProductsController extends Controller
             )),
             'barcode' => $request->get('barcode'),
             'location' => $request->get('location'),
-            'group_id' => $request->get('group') ? : null,
-            'supplier_id' => $request->get('supplier') ? : null,
+            'group_id' => $request->get('group') ?: null,
+            'supplier_id' => $request->get('supplier') ?: null,
             'image' => $file,
             'description' => $request->get('description'),
             'type' => $request->get('product_type')
@@ -65,7 +64,7 @@ class ProductsController extends Controller
 
         $product = Product::create($data);
         if ($product->save()) {
-            $product_barcode = $product->getBarcode();
+            $product->getBarcode();
             $message = 'Product created successfully';
             $current_page = 'products-create';
             $page_title = "Create Product";
@@ -86,37 +85,33 @@ class ProductsController extends Controller
                     'class' => 'btn btn-info',
                 ],
             ];
-            return view('pages.templates.finish-create',compact('message','current_page','page_title','buttons'));
+            return view('pages.templates.finish-create', compact('message', 'current_page', 'page_title', 'buttons'));
         }
 
-        return back()->with('alert-info',\Lang::get('messages.general-error'));
+        return back()->with('alert-info', trans('messages.general-error'));
 
     }
 
     public function get_view($id)
     {
-        $data = Product::find($id);
-        if ( ! empty($data) && ! is_null($data)) {
-            return view('pages.products.view', compact('data'));
-        }
-        return abort(404, 'Page not found!');
+        $product = Product::findOrFail($id);
+        return view('pages.products.view', compact('product'));
     }
 
     public function get_update($id)
     {
         $data = Product::find($id);
-        if ( ! empty($data) && ! is_null($data)) {
+        if (!empty($data) && !is_null($data)) {
             $price = unserialize($data->price);
             $warning = unserialize($data->warning);
 
-            
 
             $data = array(
                 'id' => $id,
                 'name' => $data['name'],
                 'quantity' => $data['quantity'],
                 'price' => $data['price'],
-                'warning' => $data['warning'],
+                'warning' => $warning,
                 'barcode' => $data['barcode'],
                 'type' => $data['type'],
                 'location' => $data['location'],
@@ -124,8 +119,6 @@ class ProductsController extends Controller
                 'supplier_id' => $data['supplier_id'],
                 'image' => $data['image'],
                 'description' => $data['description'],
-                'price' => $price,
-                'warning' => $warning,
                 'version' => 'update'
             );
 
@@ -136,77 +129,59 @@ class ProductsController extends Controller
 
     public function post_update($id, Request $request)
     {
-        $product = Product::find($id);
-        if ($product) {
-            $validator = \Validator::make($request->all(), array(
-                'product_name' => 'required|min:3',
-                'product_quantity' => 'required|integer'
-            ));
-            if ($validator->fails()) {
-                $messages = '';
-                $err_list = $validator->errors()->all();
-                foreach ($err_list as $key => $message) {
-                    $messages = $messages . $message . '<br />';
+        $product = Product::findOrFail($id);
+        $this->validate($request, [
+            'product_name' => 'required|min:3',
+            'product_quantity' => 'required|integer'
+        ]);
+        $file = null;
+        if ($request->hasfile('image')) {
+            if ($request->file('image')->isValid()) {
+                $input_file = $request->file('image');
+                $destination_path = public_path("uploads/images/");
+                $extension = $input_file->getClientOriginalExtension();
+                $file_name = str_random(5) . date('hisdmY') . str_random(5) . '.' . $extension;
+                if ($input_file->move($destination_path, $file_name)) {
+                    $file = "uploads/images/" . $file_name;
                 }
-                return response(array(
-                    'result' => 'error',
-                    'message' => $messages
-                ));
-            } else {
-
-                $file = null;
-                if($request->hasfile('image')){
-                    if ($request->file('image')->isValid()) {
-                        $input_file = $request->file('image');
-                        $destination_path = public_path("uploads/images/");
-                        $extension = $input_file->getClientOriginalExtension();
-                        $file_name = str_random(5) . date('hisdmY') . str_random(5) . '.' .  $extension;
-                        if($input_file->move($destination_path,$file_name)){
-                            $file = "uploads/images/" . $file_name;
-                        }
-                    }
-                }
-
-                $price = array(
-                    'purchase_price' => $request->get('purchase_price') ? : 0.00,
-                    'sale_price' => $request->get('sale_price') ? : 0.00
-                );
-                $warning = array(
-                    'warning_1' => $request->get('warning_1'),
-                    'warning_2' => $request->get('warning_2'),
-                    'warning_3' => $request->get('warning_3')
-                );
-
-                $data = array(
-                    'name' => $request->get('product_name'),
-                    'quantity' => $request->get('product_quantity'),
-                    'price' => serialize($price),
-                    'warning' => serialize($warning),
-                    'barcode' => $request->get('barcode') ? : null,
-                    'location' => $request->get('location') ? : null,
-                    'group_id' => $request->get('group') ? : null,
-                    'supplier_id' => $request->get('supplier') ? : null,
-                    'image' => $file ? : $product->image,
-                    'description' => $request->get('description') ? : null,
-                    'type' => $request->get('product_type'),
-                );
-                if ($product->update($data)) {
-                    return back()->with('alert-success','Product updated successfully');
-                }
-
             }
-
-            return back()->with('alert-danger',\Lang::get('messages.general-error'));
         }
-        return abort(404, 'Page not found!');
+
+        $price = array(
+            'purchase_price' => $request->get('purchase_price') ?: 0.00,
+            'sale_price' => $request->get('sale_price') ?: 0.00
+        );
+        $warning = array(
+            'warning_1' => $request->get('warning_1'),
+            'warning_2' => $request->get('warning_2'),
+            'warning_3' => $request->get('warning_3')
+        );
+
+        $data = array(
+            'name' => $request->get('product_name'),
+            'quantity' => $request->get('product_quantity'),
+            'price' => serialize($price),
+            'warning' => serialize($warning),
+            'barcode' => $request->get('barcode') ?: null,
+            'location' => $request->get('location') ?: null,
+            'group_id' => $request->get('group') ?: null,
+            'supplier_id' => $request->get('supplier') ?: null,
+            'image' => $file ?: $product->image,
+            'description' => $request->get('description') ?: null,
+            'type' => $request->get('product_type'),
+        );
+        if ($product->update($data)) {
+            return back()->with('alert-success', 'Product updated successfully');
+        }
 
 
+        return back()->with('alert-danger', \Lang::get('messages.general-error'));
     }
 
     public function get_stockIn($id)
     {
         $data = Product::find($id);
-        if ( ! empty($data) && ! is_null($data)) {
+        if (!empty($data) && !is_null($data)) {
 
             return view('pages.products.stock-in', compact('data'));
         }
@@ -216,7 +191,7 @@ class ProductsController extends Controller
     public function post_stockIn($id, Request $request)
     {
         $product = Product::find($id);
-        if ( ! empty($product) && ! is_null($product)) {
+        if (!empty($product) && !is_null($product)) {
             $quantity = round($request->get('quantity'));
             $total = round($product->quantity + $quantity);
             $product->quantity = $total;
@@ -236,7 +211,7 @@ class ProductsController extends Controller
     public function get_stockOut($id)
     {
         $data = Product::find($id);
-        if ( ! empty($data) && ! is_null($data)) {
+        if (!empty($data) && !is_null($data)) {
 
             return view('pages.products.stock-out', compact('data'));
         }
@@ -246,7 +221,7 @@ class ProductsController extends Controller
     public function post_stockOut($id, Request $request)
     {
         $product = Product::find($id);
-        if ( ! empty($product) && ! is_null($product)) {
+        if (!empty($product) && !is_null($product)) {
             $quantity = round($request->get('quantity'));
             $total = round($product->quantity - $quantity);
             if ($total <= 0) {
@@ -268,7 +243,7 @@ class ProductsController extends Controller
     public function get_destroy($id)
     {
         $data = Product::find($id);
-        if ( ! empty($data) && ! is_null($data)) {
+        if (!empty($data) && !is_null($data)) {
             Product::destroy($id);
             return response(array(
                 'result' => 'success',
@@ -276,63 +251,6 @@ class ProductsController extends Controller
             ));
         }
         return abort(404, 'Page not found!');
-    }
-
-    public function api_getList()
-    {
-        $data = Product::all();
-
-        if (count($data) > 0) {
-            return \Datatables::of($data)
-                ->addColumn('action', function ($product) {
-                    $buttons= [
-                        [
-                            'title' => 'Modify',
-                            'class' => 'btn btn-xs btn-primary',
-                            'href' => route('modify-product', $product->id)
-                        ],
-                        [
-                            'title' => 'Stock In',
-                            'class' => 'btn btn-xs btn-success',
-                            'href' => route('stock-in-product', $product->id)
-                        ],
-                        [
-                            'title' => 'Stock Out',
-                            'class' => 'btn btn-xs btn-primary',
-                            'href' => route('stock-out-product', $product->id)
-                        ],
-                    ];
-
-                    $html = '';
-                    foreach ($buttons as $btn) {
-                        $html .= sprintf('<a class="%s" href="%s">%s</a>',$btn['class'],$btn['href'],$btn['title']);
-                    }
-                    return $html;
-                })
-                ->editColumn('type', function ($product) {
-                    $types = config('app_config.product_type');
-                    return array_key_exists($product->type, $types) ? $types[$product->type] : '';
-                })
-                ->editColumn('price', function ($product) {
-                    $sale_price = unserialize($product->price)['sale_price'];
-                    return $sale_price;
-                })
-                ->addColumn('select', function ($product) {
-                    return ' <div class="checkbox-custom mb5" >
-    <input id = "deleteSupplier-' . $product->id . '" class="multiDeleteSupplier" onchange = "countSelected()" name = "product-' . $product->id . '" type = "checkbox" class="deleteSupplier" value = "' . $product->id . '" >
-    <label for="deleteSupplier-' . $product->id . '" ></label >
-</div > ';
-                })
-                ->editColumn('name', function ($product) {
-                    return ' <a href = "' . route('view-product', $product->id) . '" > ' . $product->name . '</a > ';
-                })
-                ->make(true);
-        } else {
-            return response([
-                'data' => []
-            ]);
-        }
-
     }
 
     public function api_bulkDelete(Request $request)
@@ -361,9 +279,9 @@ class ProductsController extends Controller
 
         $data = array();
         $products = Product::with('warning_levels')
-                ->join('warning_levels','warning_levels.id' ,'=','products.warning_id')
-                ->where(\DB::raw('products.quantity'),'<',\DB::raw('warning_levels.level_3'))
-                ->get();
+            ->join('warning_levels', 'warning_levels.id', '=', 'products.warning_id')
+            ->where(\DB::raw('products.quantity'), '<', \DB::raw('warning_levels.level_3'))
+            ->get();
         $warning_status = array(
             'warning_1' => 'danger',
             'warning_2' => 'warning',
@@ -400,9 +318,9 @@ class ProductsController extends Controller
 
     public function get_search($barcode)
     {
-        
+
         $product = Product::where('barcode', $barcode)
-                            ->get()->first();
+            ->get()->first();
         if ($product) {
             return response(array(
                 'type' => 'success',
@@ -422,8 +340,8 @@ class ProductsController extends Controller
     {
         $code = $request->get('code');
         $product = Product::where('barcode', $code)
-                            ->orWhere('name', $code)
-                            ->get()->first();
+            ->orWhere('name', $code)
+            ->get()->first();
         if ($product) {
             return response(array(
                 'type' => 'success',
